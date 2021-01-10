@@ -1,0 +1,246 @@
+version: "3.3"
+services:
+  db:
+    image: mysql:8.0
+    container_name: interlife-mysql
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_general_ci', '--default-authentication-plugin=mysql_native_password']
+    depends_on:
+      - registrator
+    labels:
+      - "SERVICE_3306_NAME=mysql"
+      - "SERVICE_3306_TAGS=develop"
+      - "SERVICE_33060_IGNORE=true"
+
+  mongo:
+    image: mongo:3
+    container_name: interlife-mongo
+    volumes:
+      - mongo-data:/data/db
+    labels:
+      - "SERVICE_IGNORE=true"
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.6.1
+    container_name: interlife-es
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    environment:
+      - http.host=0.0.0.0
+      - transport.host=localhost
+      - network.host=0.0.0.0
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    labels:
+      - "SERVICE_IGNORE=true"
+
+  graylog:
+    build: scripts/graylog
+    container_name: interlife-graylog
+    environment:
+      - GRAYLOG_PASSWORD_SECRET=somepasswordsentence #admin admin
+      - GRAYLOG_ROOT_PASSWORD_SHA2=8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+      - GRAYLOG_HTTP_EXTERNAL_URI=http://127.0.0.1:9090/
+      - GRAYLOG_ELASTICSEARCH_VERSION=6
+    depends_on:
+      - registrator
+    ports:
+      - 9090:9000
+    labels:
+      - "SERVICE_12201_NAME=graylog"
+      - "SERVICE_12201_TAGS=develop"
+      - "SERVICE_9000_IGNORE=true"
+
+  consul:
+    image: consul:latest
+    container_name: interlife-consul
+    command: agent -server -client 0.0.0.0 -bootstrap -ui
+    ports:
+      - 8500:8500
+    volumes:
+      - consul-data:/consul/data
+    labels:
+      - "SERVICE_IGNORE=true"
+
+  consul-init:
+    image: consul:latest
+    container_name: interlife-consul-init
+    command: ["/scripts/consul-init.sh"]
+    volumes:
+      - ./scripts/consul:/scripts
+    environment:
+      CONSUL_HOST: consul
+      CDN_URL: http://${HOSTNAME}:1080/static/
+    depends_on:
+      - consul
+    labels:
+      - "SERVICE_IGNORE=true"
+
+  registrator:
+    image: gliderlabs/registrator
+    container_name: interlife-registrator
+    entrypoint: /bin/registrator -internal consul://consul:8500
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock
+    depends_on:
+      - consul
+
+  vault:
+    image: vault:latest
+    container_name: interlife-vault
+    ports:
+      - 8200:8200
+    volumes:
+      - ./etc/vault:/vault/config
+      - ./scripts/vault:/scripts
+    command: server
+    depends_on:
+      - consul
+    labels:
+      - "SERVICE_8200_NAME=vault"
+      - "SERVICE_8200_TAGS=develop"
+
+  vault-init:
+      image: vault:latest
+      command: ["/scripts/vault-init.sh", "--init"]
+      container_name: interlife-vault-init
+      volumes:
+        - ./scripts/vault:/scripts
+      environment:
+        VAULT_HOST: vault
+      depends_on:
+        - vault
+      labels:
+        - "SERVICE_IGNORE=true"
+
+  minio:
+    image: minio/minio:latest
+    container_name: interlife-s3
+    command: server /data
+    ports:
+      - 9000:9000
+    volumes:
+      - minio-data:/data
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+    depends_on:
+      - registrator
+    labels:
+      - "SERVICE_NAME=s3"
+      - "SERVICE_TAGS=develop"
+
+  minio-init:
+    image: minio/mc
+    container_name: interlife-s3-init
+    entrypoint: ["/scripts/minio-init.sh"]
+    environment:
+      MINIO_HOST: minio
+    volumes:
+      - ./scripts/minio:/scripts
+    depends_on:
+      - minio
+    labels:
+      - "SERVICE_IGNORE=true"
+
+  rabbit:
+    image: rabbitmq:management-alpine
+    hostname: rabbit
+    container_name: interlife-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    ports:
+      - 15672:15672
+    depends_on:
+      - registrator
+    labels:
+      - "SERVICE_5672_NAME=rabbitmq"
+      - "SERVICE_5672_TAGS=develop"
+      - "SERVICE_4369_IGNORE=true"
+      - "SERVICE_5671_IGNORE=true"
+      - "SERVICE_15671_IGNORE=true"
+      - "SERVICE_15672_IGNORE=true"
+      - "SERVICE_25672_IGNORE=true"
+
+  redis:
+    image: redis:alpine
+    container_name: interlife-redis
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+    depends_on:
+      - registrator
+    labels:
+      - "SERVICE_NAME=redis"
+      - "SERVICE_TAGS=develop"
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: interlife-mailhog
+    ports:
+      - 8025:8025
+    labels:
+      - "SERVICE_1025_IGNORE=true"
+      - "SERVICE_8025_IGNORE=true"
+
+#  posts-api:
+#    build: ./posts-api
+#    container_name: interlife-posts-api
+#    volumes:
+#      - ./posts-api:/var/www/html
+#      - ./scripts/posts-api/php.ini:/usr/local/etc/php/php.ini
+#    environment:
+#      APP_DEBUG: "true"
+#      CLUSTER: ${CLUSTER}
+#      LOG_LEVEL: DEBUG
+#      LOG_OUTPUT: gelf
+#      PHP_IDE_CONFIG: "serverName=posts-api"
+#    labels:
+#      - "SERVICE_NAME=interlife-api"
+#      - "SERVICE_TAGS=develop"
+#    depends_on:
+#      - db
+#      - consul-init
+#      - vault-init
+#      - minio-init
+#      - redis
+#      - graylog
+#      - registrator
+
+  gateway:
+    build: ./scripts/gateway
+    container_name: interlife-gateway
+    environment:
+      CLUSTER: ${CLUSTER}
+      CONSUL_HTTP_ADDR: consul:8500
+    ports:
+      - 1080:80
+      - 1090:1090
+      - 1070:1070
+      - 1010:1010
+#    depends_on:
+#      - posts-api
+    labels:
+      - "SERVICE_IGNORE=true"
+
+volumes:
+  mysql-data:
+  consul-data:
+  minio-data:
+  redis-data:
+  rabbitmq-data:
+  mongo-data:
+  es-data:
