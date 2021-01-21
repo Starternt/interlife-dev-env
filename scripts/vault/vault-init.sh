@@ -174,3 +174,42 @@ function vault_check_unseal() {
 
 	return $err;
 }
+
+
+#Check script usage
+test $# -eq 1 || { show_error "Wrong script usage!" ""; show_usage; exit 1; }
+test x"$1" == x"" && show_usage
+
+
+test x"$1" = x"--init" && {
+
+		show_notice "Vault init started."
+		vault_check && \
+		vault_check_init && \
+		vault_check_unseal && \
+		sleep 5 && vault_authorise && \
+		vault_create_policies && \
+		vault_create_tokens && \
+		vault_enable_secrets_storage && \
+		vault_create_secrets
+}
+
+test x"$1" = x"--unseal" && {
+	vault_unseal
+}
+
+test x"$1" = x"--authorise" && {
+	vault_authorise
+}
+
+test x"$1" = x"--create-policies" && {
+	vault_create_policies
+}
+
+test x"$1" = x"--create-tokens" && {
+	vault_create_tokens
+}
+
+test x"$1" = x"--create-secrets" && {
+	vault_create_secrets
+}
