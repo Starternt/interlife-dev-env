@@ -196,29 +196,29 @@ services:
       - "SERVICE_1025_IGNORE=true"
       - "SERVICE_8025_IGNORE=true"
 
-#  posts-api:
-#    build: ./posts-api
-#    container_name: interlife-posts-api
-#    volumes:
-#      - ./posts-api:/var/www/html
-#      - ./scripts/posts-api/php.ini:/usr/local/etc/php/php.ini
-#    environment:
-#      APP_DEBUG: "true"
-#      CLUSTER: ${CLUSTER}
-#      LOG_LEVEL: DEBUG
-#      LOG_OUTPUT: gelf
-#      PHP_IDE_CONFIG: "serverName=posts-api"
-#    labels:
-#      - "SERVICE_NAME=interlife-api"
-#      - "SERVICE_TAGS=develop"
-#    depends_on:
-#      - db
-#      - consul-init
-#      - vault-init
-#      - minio-init
-#      - redis
-#      - graylog
-#      - registrator
+  posts-api:
+    build: ./posts-api
+    container_name: interlife-posts-api
+    volumes:
+      - ./posts-api:/var/www/html
+      - ./scripts/posts-api/php.ini:/usr/local/etc/php/php.ini
+    environment:
+      APP_DEBUG: "true"
+      CLUSTER: ${CLUSTER}
+      LOG_LEVEL: DEBUG
+      LOG_OUTPUT: gelf
+      PHP_IDE_CONFIG: "serverName=posts-api"
+    labels:
+      - "SERVICE_NAME=interlife-posts-api"
+      - "SERVICE_TAGS=develop"
+    depends_on:
+      - db
+      - consul-init
+      - vault-init
+      - minio-init
+      - redis
+      - graylog
+      - registrator
 
   gateway:
     build: ./scripts/gateway
