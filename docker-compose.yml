@@ -231,8 +231,8 @@ services:
       - 1090:1090
       - 1070:1070
       - 1010:1010
-#    depends_on:
-#      - posts-api
+    depends_on:
+      - posts-api
     labels:
       - "SERVICE_IGNORE=true"
 
