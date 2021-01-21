@@ -1,7 +1,7 @@
-path "secret/saas/s3" {
+path "secret/s3" {
     capabilities = ["read"]
 }
 
-path "secret/saas/databases/*" {
+path "secret/posts-database" {
     capabilities = ["read", "list"]
 }
