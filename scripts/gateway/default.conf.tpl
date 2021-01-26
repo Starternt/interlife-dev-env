@@ -17,12 +17,14 @@ server {
 
     client_max_body_size 16M;
 
-    location /posts-api {
+    location ~ ^/posts-api {
         rewrite ^/posts-api(.*?)$ $1 break;
 
         fastcgi_pass posts_api_upstream;
         fastcgi_index index.php;
+
         include /etc/nginx/fastcgi_params;
+
         fastcgi_param SCRIPT_FILENAME /var/www/html/public/index.php;
         fastcgi_param  REQUEST_URI $document_uri;
     }
