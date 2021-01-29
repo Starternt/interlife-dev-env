@@ -220,6 +220,30 @@ services:
       - graylog
       - registrator
 
+  votes-api:
+    build: ./votes-api
+    container_name: interlife-votes-api
+    volumes:
+      - ./votes-api:/var/www/html
+      - ./scripts/votes-api/php.ini:/usr/local/etc/php/php.ini
+    environment:
+      APP_DEBUG: "true"
+      CLUSTER: ${CLUSTER}
+      LOG_LEVEL: DEBUG
+      LOG_OUTPUT: gelf
+      PHP_IDE_CONFIG: "serverName=votes-api"
+    labels:
+      - "SERVICE_NAME=interlifes-votes-api"
+      - "SERVICE_TAGS=develop"
+    depends_on:
+      - db
+      - consul-init
+      - vault-init
+      - minio-init
+      - redis
+      - graylog
+      - registrator
+
   gateway:
     build: ./scripts/gateway
     container_name: interlife-gateway
@@ -228,8 +252,10 @@ services:
       CONSUL_HTTP_ADDR: consul:8500
     ports:
       - 1080:80
+      - 1090:1090
     depends_on:
       - posts-api
+      - votes-api
     labels:
       - "SERVICE_IGNORE=true"
 
