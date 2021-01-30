@@ -11,6 +11,7 @@ COPY ./entry-point /usr/local/bin/entry-point
 COPY ./conf.hcl /etc/consul-template/conf.hcl
 COPY ./proxy_params /etc/nginx/proxy_params
 COPY ./default.conf.tpl /etc/nginx/conf.d/default.conf.tpl
+COPY ./votes.conf.tpl /etc/nginx/conf.d/votes.conf.tpl
 
 ENV CONSUL_HTTP_ADDR=consul:8500
 ENV CLUSTER=develop

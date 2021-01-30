@@ -233,7 +233,7 @@ services:
       LOG_OUTPUT: gelf
       PHP_IDE_CONFIG: "serverName=votes-api"
     labels:
-      - "SERVICE_NAME=interlifes-votes-api"
+      - "SERVICE_NAME=interlife-votes-api"
       - "SERVICE_TAGS=develop"
     depends_on:
       - db
