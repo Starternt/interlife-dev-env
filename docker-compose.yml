@@ -196,6 +196,29 @@ services:
       - "SERVICE_1025_IGNORE=true"
       - "SERVICE_8025_IGNORE=true"
 
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - 2181:2181
+
+  kafka:
+    image: wurstmeister/kafka
+    container_name: interlife-kafka
+    ports:
+      - 9092:9092
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_CREATE_TOPICS: "votes:1:1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - zookeeper
+      - registrator
+    labels:
+      - "SERVICE_9092_NAME=kafka"
+      - "SERVICE_TAGS=develop"
+
   posts-api:
     build: ./posts-api
     container_name: interlife-posts-api
@@ -211,6 +234,33 @@ services:
     labels:
       - "SERVICE_NAME=interlife-posts-api"
       - "SERVICE_TAGS=develop"
+    depends_on:
+      - db
+      - consul-init
+      - vault-init
+      - minio-init
+      - redis
+      - graylog
+      - registrator
+
+  posts-daemons:
+    build:
+      context: ./posts-api
+      dockerfile: Dockerfile.supervisor
+    container_name: interlife-posts-daemons
+    command: sh -c 'supervisord --configuration /etc/supervisord.conf'
+    volumes:
+      - ./posts-api/etc/supervisord.conf:/etc/supervisord.conf
+      - ./scripts/wait-for:/usr/local/bin/wait-for
+      - ./posts-api:/var/www/html
+    environment:
+      APP_DEBUG: "true"
+      CLUSTER: ${CLUSTER}
+      LOG_LEVEL: DEBUG
+      LOG_OUTPUT: gelf
+      PHP_IDE_CONFIG: "serverName=posts-daemons"
+    labels:
+      - "SERVICE_IGNORE=true"
     depends_on:
       - db
       - consul-init
@@ -242,6 +292,7 @@ services:
       - minio-init
       - redis
       - graylog
+      - kafka
       - registrator
 
   gateway:
