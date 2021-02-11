@@ -8,6 +8,11 @@ template {
   destination = "/etc/nginx/conf.d/votes.conf"
 }
 
+template {
+  source = "/etc/nginx/conf.d/users.conf.tpl"
+  destination = "/etc/nginx/conf.d/users.conf"
+}
+
 exec {
   command = "nginx -g \"daemon off;\""
 }
