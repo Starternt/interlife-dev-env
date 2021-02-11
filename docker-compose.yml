@@ -331,6 +331,9 @@ services:
     environment:
       PHP_IDE_CONFIG: "serverName=notifications-service"
       CLUSTER: ${CLUSTER}
+      LOG_LEVEL: DEBUG
+      LOG_OUTPUT: gelf
+      APP_DEBUG: "true"
     labels:
       - "SERVICE_IGNORE=true"
     depends_on:
