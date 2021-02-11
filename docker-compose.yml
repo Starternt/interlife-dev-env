@@ -319,6 +319,23 @@ services:
       - kafka
       - registrator
 
+  notifications-service:
+    build:
+      context: ./notifications-service
+    container_name: interlife-notifications-service
+    command: sh -c 'supervisord --configuration /etc/supervisord.conf'
+    volumes:
+      - ./notifications-service/etc/supervisord.conf:/etc/supervisord.conf
+      - ./scripts/wait-for:/usr/local/bin/wait-for
+      - ./notifications-service:/var/www/html
+    environment:
+      PHP_IDE_CONFIG: "serverName=notifications-service"
+      CLUSTER: ${CLUSTER}
+    labels:
+      - "SERVICE_IGNORE=true"
+    depends_on:
+      - mailhog
+
   gateway:
     build: ./scripts/gateway
     container_name: interlife-gateway
