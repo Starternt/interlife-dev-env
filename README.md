@@ -1,5 +1,8 @@
 # interlife Development Environment
 
+
+
+
 ## Requirements
 * Docker 17.06.0+
 * Docker Compose 1.22.0+
@@ -11,9 +14,7 @@ To deploy environment you need:
 ```
 docker-compose ps
 ```
-```
-                                                                                                    
-```
+
 * Execute following commands
 ```
 
@@ -39,3 +40,5 @@ docker-compose stop
 * [Minio](https://www.minio.io/) - ```http://localhost:9000``` (access key - ```minio```, secret key - ```minio```)
 * [RabbitMQ](https://www.rabbitmq.com/) - ```http://localhost:15672``` (username: ```user```, password: ```password```)
 * [Graylog](https://www.graylog.org/) - ```http://localhost:9090``` (username: ```admin```, password: ```admin```)
+* [Kafka](https://kafka.apache.org/) - ```http://localhost:9092```
+* [Elasticsearch](https://www.elastic.co/)
