@@ -5,3 +5,7 @@ path "secret/s3" {
 path "secret/posts-database" {
     capabilities = ["read", "list"]
 }
+
+path "secret/jwt" {
+    capabilities = ["read"]
+}
