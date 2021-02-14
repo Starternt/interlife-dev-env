@@ -12,6 +12,7 @@ jsonapi specification is used  for building api in JSON
 docker is used to for deployment
 s3 storage is used for storage images (not implemented yet)
 nginx is used as load balancer
+jwt authorization
 
 ## Requirements
 * Docker 17.06.0+
