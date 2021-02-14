@@ -1,6 +1,16 @@
 # interlife Development Environment
 
+This project is an example of microservice architecture implementation.
+The project consists of 4 main services:
+Posts-api - responsible for posts
+Users-api - responsible for create tokens and register users
+Votes-api - responsible for voting for posts by users
+Notifications-service - responsible for any notifications (emails, sms, etc)
 
+Kafka is used for deliver messages across services.
+jsonapi specification is used  for building api in JSON
+docker is used to for deployment
+s3 storage is used for storage images (not implemented yet)
 
 
 ## Requirements
@@ -13,11 +23,6 @@ To deploy environment you need:
 * Wait until initialization containers will finish work:
 ```
 docker-compose ps
-```
-
-* Execute following commands
-```
-
 ```
 
 ## Launching
