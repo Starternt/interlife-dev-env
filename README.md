@@ -1,4 +1,4 @@
-# interlife Development Environment
+# Development Environment
 
 This project is an example of microservice architecture implementation.
 The project consists of 4 main services:
